@@ -10,13 +10,12 @@ import type {
   SubagentRuntime,
 } from '@deepseek-ai/dsh-subagent'
 import type {} from '@deepseek-ai/dsh-subagent'
-import type {} from '@deepseek-ai/dsh-settings'
 import {
   ConfigSchema,
   MODEL_SWITCH_SETTINGS_NAMESPACE,
   resolveCustomSelection,
 } from './config.ts'
-import type { Config as ModelSwitchConfig } from './shared.ts'
+import { resolveRuntimeConfig, type RuntimeConfig } from './shared.ts'
 import { mergeAgentOptions } from './merge.ts'
 import {
   effortFromSelection,
@@ -70,18 +69,8 @@ function withContinuableOptions(
  * @param ctx - host plugin context.
  * @param config - composition-entry defaults.
  */
-export function apply(ctx: Context, config: ModelSwitchConfig = {}): void {
-  let current: () => ModelSwitchConfig = () => config
-
-  // The settings provider is optional: attach the namespace while a provider
-  // is present and keep falling back to the composition entry otherwise.
-  // `ctx.settings` is only reachable on a context that injected the service.
-  ctx.inject(['settings'], (settingsCtx) => {
-    settingsCtx.settings.installSection(ctx, MODEL_SWITCH_SETTINGS_NAMESPACE, ConfigSchema, config, {
-      setSource: (source) => { current = source },
-      onChange: () => { /* live reads via current() */ },
-    })
-  })
+export function apply(ctx: Context, config: RuntimeConfig = {}): void {
+  const current = () => resolveRuntimeConfig(config)
 
   const labels = new SessionLabelRegistry()
   installSessionLabelsHttp(ctx, labels)
