@@ -1,5 +1,11 @@
 /**
  * Host half of dsh-model-switch: persist settings and inject subagent model routes.
+ *
+ * Compatibility note (DSH 0.2.1-rc.2): the `ctx.subagents` service no longer
+ * exposes `start()` / `startContinuable()`. Delegation now flows through a single
+ * entry point, `startActivation(spec)`, where the child route lives on
+ * `spec.request.agentOptions`. We therefore patch `startActivation` when it is
+ * present and fall back to the legacy pair on older hosts.
  */
 import type { Context } from '@deepseek-ai/cordis';
 import { ConfigSchema, MODEL_SWITCH_SETTINGS_NAMESPACE } from './config.ts';
